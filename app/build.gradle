@@ -1,9 +1,16 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.jfrog.bintray' version '1.8.0'
+    id 'com.github.dcendents.android-maven' version '2.1'
+}
+
+apply plugin: 'com.android.library'
+
+group = 'com.github.hieupt.baseandroidmvp'
+version = '1.0'
 
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "com.github.hieupt.baseandroidmvp"
         minSdkVersion 14
         targetSdkVersion 27
         versionCode 1
@@ -14,6 +21,46 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+task generateSourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
+
+task generateJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath()
+            .join(File.pathSeparator))
+}
+
+task generateJavadocsJar(type: Jar) {
+    from generateJavadocs.destinationDir
+    classifier 'javadoc'
+}
+
+generateJavadocsJar.dependsOn generateJavadocs
+
+artifacts {
+    archives generateJavadocsJar
+    archives generateSourcesJar
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    configurations = ['archives']
+    pkg {
+        repo = 'utilities'
+        name = 'base-android-mvp'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/hieupham1993/base-android-mvp.git'
+        version {
+            name = '1.0'
+            desc = 'Base Android MVP pattern 1.0'
+            released = new Date()
         }
     }
 }
